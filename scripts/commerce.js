@@ -1,4 +1,7 @@
 /* eslint-disable import/prefer-default-export, import/no-cycle */
+// ===== START: Custom Modifications For Luma Bridge =====
+import { auth } from './auth/api.js';
+// ===== END: Custom Modifications For Luma Bridge =====
 import { getConfigValue } from './configs.js';
 import { getConsent } from './scripts.js';
 
@@ -154,10 +157,12 @@ export async function performCatalogServiceQuery(query, variables) {
   return queryResponse.data;
 }
 
+// ===== START: Custom Modifications For Luma Bridge =====
 export function getSignInToken() {
   // TODO: Implement in project
-  return '';
+  return auth.getToken();
 }
+// ===== END: Custom Modifications For Luma Bridge =====
 
 export async function performMonolithGraphQLQuery(query, variables, GET = true, USE_TOKEN = false) {
   const GRAPHQL_ENDPOINT = await getConfigValue('commerce-core-endpoint');

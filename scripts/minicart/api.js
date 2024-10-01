@@ -102,6 +102,16 @@ class Store {
     this.cartId = null;
   }
 
+  // ===== START: Custom Modifications For Luma Bridge =====
+  /**
+   * Reset cart storage when user logs out or cart is reset in Adobe Commerce
+   */
+  resetCartIdStore() {
+    this.resetCart();
+    window.localStorage.removeItem(Store.CARTID_STORE);
+  }
+  // ===== END: Custom Modifications For Luma Bridge =====
+
   subscribe(callback) {
     this.subscribers.push(callback);
     callback(this.getCart());
@@ -110,11 +120,16 @@ class Store {
 
 export const store = new Store();
 
+// ===== START: Custom Modifications For Luma Bridge =====
 export const cartApi = {
   addToCart: async (sku, options, quantity, source = 'product-detail') => {
-    const { addToCart, createCart } = await import('./cart.js');
+    const { auth } = await import('../auth/api.js');
+    const { addToCart, createCart, customerCart } = await import('./cart.js');
     const { showCart } = await import('./Minicart.js');
-    if (!store.getCartId()) {
+    if (!store.getCartId() && auth.getToken()) {
+      await customerCart();
+    } else if (!store.getCartId()) {
+      // eslint-disable-next-line no-console
       console.debug('Cannot add item to cart, need to create a new cart first.');
       await createCart();
     }
@@ -133,3 +148,4 @@ export const cartApi = {
     },
   },
 };
+// ===== END: Custom Modifications For Luma Bridge =====

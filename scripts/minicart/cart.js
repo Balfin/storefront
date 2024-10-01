@@ -58,6 +58,15 @@ const createCartMutation = `mutation createCart {
   cartId: createEmptyCart
 }`;
 
+// ===== START: Custom Modifications For Luma Bridge =====
+const customerCartQuery = `query customerCart {
+  customerCart {
+    id 
+  }
+}
+`;
+// ===== END: Custom Modifications For Luma Bridge =====
+
 const removeItemFromCartMutation = `mutation removeItemFromCart($cartId: String!, $uid: ID!) {
   removeItemFromCart(input: { cart_id: $cartId, cart_item_uid: $uid }) {
       cart {
@@ -209,6 +218,22 @@ export async function createCart() {
     console.error('Could not create empty cart', err);
   }
 }
+
+// ===== START: Custom Modifications For Luma Bridge =====
+export async function customerCart() {
+  try {
+    const { data, errors } = await performMonolithGraphQLQuery(customerCartQuery, {}, false, true);
+    handleCartErrors(errors);
+    const { id } = data.customerCart;
+    store.setCartId(id);
+    // eslint-disable-next-line no-console
+    console.debug('Fetched cart for customer', id);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Could not fetch cart for customer', err);
+  }
+}
+// ===== END: Custom Modifications For Luma Bridge =====
 
 export async function addToCart(sku, options, quantity, source) {
   const done = waitForCart();

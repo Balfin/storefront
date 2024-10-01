@@ -1,6 +1,14 @@
 import { cartApi } from '../../scripts/minicart/api.js';
+// ===== START: Custom Modifications For Luma Bridge =====
+import { bridgeApi } from '../../scripts/bridge/api.js';
+// ===== END: Custom Modifications For Luma Bridge =====
 import { getMetadata } from '../../scripts/aem.js';
 import { loadFragment } from '../fragment/fragment.js';
+
+// ===== START: Custom Modifications For Luma Bridge =====
+// Synchronize bridge authentication and refresh cart if required
+await bridgeApi.synchronize();
+// ===== END: Custom Modifications For Luma Bridge =====
 
 // media query match that indicates mobile/tablet width
 const isDesktop = window.matchMedia('(min-width: 900px)');
@@ -162,6 +170,58 @@ export default async function decorate(block) {
     navTools.querySelector('.nav-cart-button').textContent = quantity;
   });
 
+  // ===== START: Custom Modifications For Luma Bridge =====
+  // Checkout bridge redirect
+  const checkoutButton = document.createRange().createContextualFragment(`<div class="checkout-button-wrapper">
+    <button type="button" class="nav-bridge-checkout-button">Checkout</button>
+    <div></div>
+  </div>`);
+  navTools.append(checkoutButton);
+  navTools.querySelector('.nav-bridge-checkout-button').addEventListener('click', () => {
+    bridgeApi.redirect('checkout');
+  });
+
+  // Cart bridge redirect
+  const cartButton = document.createRange().createContextualFragment(`<div class="cart-button-wrapper">
+    <button type="button" class="nav-bridge-cart-button">Cart</button>
+    <div></div>
+  </div>`);
+  navTools.append(cartButton);
+  navTools.querySelector('.nav-bridge-cart-button').addEventListener('click', () => {
+    bridgeApi.redirect('cart');
+  });
+
+  // Account buttons
+  const logoutButton = document.createRange().createContextualFragment(`<div class="logout-button-wrapper">
+    <button type="button" class="nav-bridge-logout-button">Logout</button>
+    <div></div>
+  </div>`);
+  const loginButton = document.createRange().createContextualFragment(`<div class="login-button-wrapper">
+    <button type="button" class="nav-bridge-login-button">Login</button>
+    <div></div>
+  </div>`);
+  const accountButton = document.createRange().createContextualFragment(`<div class="account-button-wrapper">
+    <button type="button" class="nav-bridge-account-button">Account</button>
+    <div></div>
+  </div>`);
+
+  // Customer account redirects
+  const authenticated = await bridgeApi.authenticated();
+  if (authenticated) {
+    navTools.append(accountButton, logoutButton);
+    navTools.querySelector('.nav-bridge-account-button').addEventListener('click', () => {
+      bridgeApi.redirect('account');
+    });
+    navTools.querySelector('.nav-bridge-logout-button').addEventListener('click', () => {
+      bridgeApi.redirect('account-logout');
+    });
+  } else {
+    navTools.append(loginButton);
+    navTools.querySelector('.nav-bridge-login-button').addEventListener('click', () => {
+      bridgeApi.redirect('account-login');
+    });
+  }
+  // ===== END: Custom Modifications For Luma Bridge =====
   // Search
   const searchInput = document.createRange().createContextualFragment(`<div class="nav-search-input hidden">
       <form id="search_mini_form" action="/search" method="GET">

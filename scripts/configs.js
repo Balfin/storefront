@@ -13,9 +13,11 @@ export const calcEnvironment = () => {
   if (href.includes('.aem.page')) {
     environment = 'stage';
   }
-  if (href.includes('localhost')) {
+  // ===== START: Custom Modifications For Luma Bridge =====
+  if (href.includes('localhost') || href.includes('adobe-commerce')) {
     environment = 'dev';
   }
+  // ===== END: Custom Modifications For Luma Bridge =====
 
   const environmentFromConfig = window.sessionStorage.getItem('environment');
   if (environmentFromConfig && ALLOWED_CONFIGS.includes(environmentFromConfig) && environment !== 'prod') {

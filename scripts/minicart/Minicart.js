@@ -11,6 +11,9 @@ import {
   removeItemFromCart,
   updateQuantityOfCartItem,
 } from './cart.js';
+// ===== START: Custom Modifications For Luma Bridge =====
+import { bridgeApi } from '../bridge/api.js';
+// ===== END: Custom Modifications For Luma Bridge =====
 
 const html = htm.bind(h);
 let cartVisible = false;
@@ -169,7 +172,9 @@ export class Minicart extends Component {
         ${state.cart.items.map((item, index) => html`<${ProductCard} index=${index} item=${item} formatter=${this.formatter} api=${props.api} />`)}
       </ul>
       <div class="minicart-actions">
-        <button class="button" onClick=${() => { window.location.href = '/cart'; }}>Go to cart</button>
+        <!-- // ===== START: Custom Modifications For Luma Bridge ===== -->
+        <button onClick=${() => { bridgeApi.redirect('cart'); }}>Go to cart</button>
+        <!-- // ===== END: Custom Modifications For Luma Bridge ===== -->
       </div>
     </div>`;
   }
