@@ -1,5 +1,5 @@
 mountpoints:
-  /: https://drive.google.com/drive/folders/1LoYfV2TLbs-sNgTKfEt8vTpvCcSA08Vl
+  /: https://adobe.sharepoint.com/:f:/r/sites/MG/cs/Shared%20Documents/Magento%20Services/Edge%20Delivery%20Services/Sites/starter-content-commerce-v2
 
 folders:
   /products/: /products/default
