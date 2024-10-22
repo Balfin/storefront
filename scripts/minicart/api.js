@@ -1,4 +1,8 @@
 /* eslint-disable import/no-cycle */
+// ===== START: Custom Modifications For Luma Bridge =====
+import { setCartCookieIfChanged } from '../bridge/cart.js';
+// ===== END: Custom Modifications For Luma Bridge =====
+
 class Store {
   constructor(key = Store.CART_STORE) {
     this.subscribers = [];
@@ -119,7 +123,6 @@ class Store {
 }
 
 export const store = new Store();
-
 // ===== START: Custom Modifications For Luma Bridge =====
 export const cartApi = {
   addToCart: async (sku, options, quantity, source = 'product-detail') => {
@@ -134,10 +137,14 @@ export const cartApi = {
       await createCart();
     }
     await addToCart(sku, options, quantity, source);
+    // Sync the new cart data to the cookie
+    await setCartCookieIfChanged(store.getCart());
     showCart();
   },
   toggleCart: async () => {
     const { toggle } = await import('./Minicart.js');
+    // Additional sync to avoid cross platform delete conflicts
+    await setCartCookieIfChanged(store.getCart());
     toggle();
   },
   cartItemsQuantity: {

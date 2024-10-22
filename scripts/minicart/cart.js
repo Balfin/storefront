@@ -1,6 +1,9 @@
 /* eslint-disable import/no-cycle */
 import { store } from './api.js';
 import { performMonolithGraphQLQuery } from '../commerce.js';
+// ===== START: Custom Modifications For Luma Bridge =====
+import { setCartCookieIfChanged } from '../bridge/cart.js';
+// ===== END: Custom Modifications For Luma Bridge =====
 
 /* Queries */
 
@@ -297,6 +300,10 @@ export async function removeItemFromCart(uid) {
     );
     handleCartErrors(errors);
     store.setCart(data.removeItemFromCart.cart);
+    // ===== START: Custom Modifications For Luma Bridge =====
+    // Try to sync the new cart data to the cookie
+    await setCartCookieIfChanged(data.removeItemFromCart.cart);
+    // ===== END: Custom Modifications For Luma Bridge =====
   } catch (err) {
     console.error('Could not remove item from cart', err);
   } finally {
@@ -324,6 +331,10 @@ export async function updateQuantityOfCartItem(cartItemUid, quantity) {
     store.setCart(data.updateCartItems.cart);
 
     console.debug('Update quantity of item in cart', variables, data.updateCartItems.cart);
+    // ===== START: Custom Modifications For Luma Bridge =====
+    // Try to sync the new cart data to the cookie
+    await setCartCookieIfChanged(data.updateCartItems.cart);
+    // ===== END: Custom Modifications For Luma Bridge =====
   } catch (err) {
     console.error('Could not update quantity of item in cart', err);
   } finally {
