@@ -31,11 +31,12 @@ export function serializeCart(cart) {
  * Set the cart cookie if the cart has changed.
  * If the cart ID is null or undefined, the cookie is removed.
  * @param {string|null} cartData Cart Data
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>}
  */
 export async function setCartCookieIfChanged(cartData) {
   const cartDataJson = serializeCart(cartData);
   const currentCookie = auth.getCookie(cookieCartData);
+  let refresh = false;
 
   // Only update the cookie if the cart ID has changed
   if (cartDataJson !== currentCookie) {
@@ -46,7 +47,9 @@ export async function setCartCookieIfChanged(cartData) {
       // Remove the cookie if is null or undefined
       deleteCookie(cookieCartData);
     }
+    refresh = true;
   }
+  return refresh;
 }
 
 /**
