@@ -1,4 +1,8 @@
 /* eslint-disable import/no-cycle */
+// ===== START: Custom Modifications For Luma Bridge =====
+import { setCartCookieIfChanged } from '../bridge/cart.js';
+// ===== END: Custom Modifications For Luma Bridge =====
+
 class Store {
   constructor(key = Store.CART_STORE) {
     this.subscribers = [];
@@ -119,7 +123,6 @@ class Store {
 }
 
 export const store = new Store();
-
 // ===== START: Custom Modifications For Luma Bridge =====
 export const cartApi = {
   addToCart: async (sku, options, quantity, source = 'product-detail') => {
@@ -134,10 +137,14 @@ export const cartApi = {
       await createCart();
     }
     await addToCart(sku, options, quantity, source);
+    // Sync the new cart data to the cookie
+    await setCartCookieIfChanged(store.getCart());
     showCart();
   },
   toggleCart: async () => {
     const { toggle } = await import('./Minicart.js');
+    // Additional sync to avoid cross platform delete conflicts
+    await setCartCookieIfChanged(store.getCart());
     toggle();
   },
   cartItemsQuantity: {
@@ -148,4 +155,41 @@ export const cartApi = {
     },
   },
 };
+
+/**
+ * Refreshes the cart data by updating the cookie if the cart has changed.
+ */
+async function refreshCartData() {
+  try {
+    const { toggle } = await import('./Minicart.js');
+    const { getCart } = await import('./cart.js');
+
+    await getCart();
+    // Retrieve the latest cart data from the store
+    const cart = store.getCart();
+
+    // Check if we need to update the cart cookie
+    const cartUpdated = await setCartCookieIfChanged(cart);
+
+    // If the cart was updated, toggle the minicart to reflect changes
+    if (cartUpdated) {
+      toggle();
+      console.log('Cart data refreshed and minicart toggled');
+    } else {
+      console.log('Cart data is already up-to-date');
+    }
+  } catch (error) {
+    console.error('Error refreshing cart data:', error);
+  }
+}
+
+// Listen for tab visibility changes to trigger cart data refresh
+document.addEventListener('visibilitychange', async () => {
+  if (document.visibilityState === 'visible') {
+    await refreshCartData();
+  }
+});
+
+export { refreshCartData };
+
 // ===== END: Custom Modifications For Luma Bridge =====
